@@ -68,8 +68,10 @@ namespace CosmosFunction
             };
 
             var Coordinates = JsonConvert.DeserializeObject<List<List<double>>>(_coordinates);
-            var listcoords = new List<List<List<double>>>();
-            listcoords.Add(Coordinates);
+            var listcoords = new List<List<List<double>>>
+            {
+                Coordinates
+            };
             circuit.GeoZone = new GeoZone
             {
                 Type = "FeatureCollection",
