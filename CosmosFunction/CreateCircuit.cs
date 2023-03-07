@@ -33,7 +33,7 @@ namespace CosmosFunction
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             dynamic data = JsonConvert.DeserializeObject(requestBody);
-            var _coordinates = data?.features[0].geometry.coordinates.ToString();
+            var _coordinates = /*data?.features[0].geometry*/data?.geometry.coordinates.ToString();
             dynamic _geozone = JsonConvert.DeserializeObject(_coordinates);
             var geo1 = _geozone[0];
             int circuitId = int.Parse(_circuitId);
@@ -67,8 +67,9 @@ namespace CosmosFunction
                              
             };
 
-
-
+            var Coordinates = JsonConvert.DeserializeObject<List<List<double>>>(_coordinates);
+            var listcoords = new List<List<List<double>>>();
+            listcoords.Add(Coordinates);
             circuit.GeoZone = new GeoZone
             {
                 Type = "FeatureCollection",
@@ -81,7 +82,7 @@ namespace CosmosFunction
                         geometry = new Geometries
                         {
                             Type = "Polygon",
-                            Coordinates =  JsonConvert.DeserializeObject<List<List<List<double>>>>(_coordinates)
+                            Coordinates = listcoords //JsonConvert.DeserializeObject<List<List<List<double>>>>(_coordinates)
                         }
                     }
                 }
