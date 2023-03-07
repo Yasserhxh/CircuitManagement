@@ -10,7 +10,9 @@ using CosmosFunction.Models;
 using System;
 using Microsoft.Azure.Cosmos.Spatial;
 using System.Collections.Generic;
-using Microsoft.Azure.Cosmos; 
+using Microsoft.Azure.Cosmos;
+using System.Data.SqlClient;
+using System.Text;
 
 namespace CosmosFunction
 {
@@ -55,7 +57,7 @@ namespace CosmosFunction
                 log.LogInformation("C# HTTP trigger function processed a request.");
             }
 
-            Circuit circuit = new Circuit
+            Circuit circuit = new()
             {
                 id = newRatingGuid,
                 CircuitId = circuitId,
@@ -91,7 +93,39 @@ namespace CosmosFunction
             };
             await documents.AddAsync(circuit);
 
+            try
+            {
+                using SqlConnection connection = new(Environment.GetEnvironmentVariable("SQLDbConnectionString"));
+                connection.Open();
+                if (!String.IsNullOrEmpty(circuit.id))
+                {
+                    /** Debut Geo Loc to WKT **/
+                    StringBuilder builder = new();
+                    builder.Append("LINESTRING(");
+                    foreach (var item in listcoords[0])
+                    {
+                        for (int i = 0; i < item.Count; i += 2)
+                        {
 
+                            builder.Append(item[i].ToString().Replace(",", ".") + " " + item[i + 1].ToString().Replace(",", "."));
+                            builder.Append(',');
+
+                        }
+                    }
+                    builder.Remove(builder.Length - 1, 1);
+                    builder.Append(')');
+                    var WKT = builder.ToString();
+                    /** Fin Geo Loc to WKT **/
+                    var query = $"INSERT INTO [Circuit] (Circuit_ZoneId,Circuit_DelegataireId,Circuit_Numero,Circuit_DelimitationGoe,Circuit_PrestationId,Circuit_IsActive,Circuit_DateCreation,Circuit_Identifier) VALUES('{circuit.ZoneId}', '{circuit.DelegataireId}' , '{circuit.CircuitNum}','{WKT}','{circuit.PrestationId}','{true}','{DateTime.Now}','{circuit.id}')";
+                    SqlCommand command = new(query, connection);
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception e)
+            {
+                log.LogError(e.ToString());
+                return new BadRequestResult();
+            }
 
             return new OkObjectResult(circuit);
 
