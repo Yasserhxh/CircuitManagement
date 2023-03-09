@@ -36,7 +36,7 @@ namespace CosmosFunction
                 Circuit circuit = new()
                 {
                     id = data?.id,
-                    CircuitId = data?.CircuitId,
+                   // CircuitId = data?.CircuitId,
                     ZoneId = data?.ZoneId,
                     SecteurId = data?.SecteurId,
                     CircuitNum = data?.CircuitNum,

@@ -25,7 +25,7 @@ namespace CosmosFunction
             IAsyncCollector<Circuit> documents, ILogger log)                     
         {
 
-            string _circuitId = req.Query["CircuitId"];
+            //string _circuitId = req.Query["CircuitId"];
             string _zoneId = req.Query["ZoneId"];
             string _secteurId = req.Query["SecteurId"];
             string _circuitNum = req.Query["CircuitNum"];
@@ -38,7 +38,7 @@ namespace CosmosFunction
             var _coordinates = /*data?.features[0].geometry*/data?.geometry.coordinates.ToString();
           //  dynamic _geozone = JsonConvert.DeserializeObject(_coordinates);
           //  var geo1 = _geozone[0];
-            int circuitId = int.Parse(_circuitId);
+            //int circuitId = int.Parse(_circuitId);
             int zoneId = int.Parse(_zoneId);
             int secteurId = int.Parse(_secteurId);
             string circuitNum = _circuitNum;
@@ -48,7 +48,7 @@ namespace CosmosFunction
 
             var newRatingGuid = Guid.NewGuid().ToString();
 
-            if (zoneId == 0 || prestationId == 0 || circuitId == 0 || circuitNum == null)
+            if (zoneId == 0 || prestationId == 0 /*|| circuitId == 0*/ || circuitNum == null)
             {
                 return new BadRequestObjectResult("Please pass a ZoneId, PrestationId, CircuitId and CircuitNum in the request body");
             }
@@ -60,7 +60,7 @@ namespace CosmosFunction
             Circuit circuit = new()
             {
                 id = newRatingGuid,
-                CircuitId = circuitId,
+                //CircuitId = circuitId,
                 ZoneId = zoneId,
                 SecteurId = secteurId,
                 CircuitNum = circuitNum,
