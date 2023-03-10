@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "TrackingSys": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7255",
+      "launchBrowser": false
+    }
+  }
+}
