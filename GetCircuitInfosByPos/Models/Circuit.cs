@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Azure.Cosmos.Spatial;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 
 
@@ -7,13 +8,15 @@ namespace GetCircuitInfosByPos.Models
     public class Circuit
     {
         public string id { get; set; }
-        public int CircuitId { get; set; }
-        public int ZoneId { get; set; }
-        public int SecteurId { get; set; } 
-        public string CircuitNum { get; set; }
-        public int PrestationId { get; set; }
+        public string Modele { get; set; }
+        [JsonProperty("time")]
+        public string Time { get; set; } 
+        public string DeviceID { get; set; }
+        public int TypePrestationId { get; set; }
+        public int TypeMaterielId { get; set; }
         public int DelegataireId { get; set; }
-        public GeoZone GeoZone { get; set; }
+        [JsonProperty("location")]
+        public Point Location { get; set; }
 
     }
 

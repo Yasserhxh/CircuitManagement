@@ -10,16 +10,8 @@ using System;
 using Microsoft.Azure.Cosmos.Spatial;
 using System.Collections.Generic;
 using Microsoft.Azure.Cosmos;
-using System.Data.SqlClient;
-using System.Text;
 using GetCircuitInfosByPos.Models;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Linq;
-using Microsoft.Azure.Documents.Client;
-using Microsoft.Extensions.Options;
 using System.Linq;
-using System.Collections;
-using System.ComponentModel;
 
 namespace CosmosFunction
 {
@@ -28,82 +20,61 @@ namespace CosmosFunction
         [FunctionName("GetCircuitInfos")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route =null)] HttpRequest req,
-            [CosmosDB(databaseName: "CircuitDB", collectionName: "RefCircuitByPresId",  ConnectionStringSetting = "CosmosDbConnectionString")]
-            DocumentClient  documents, ILogger log)                     
+            [CosmosDB(databaseName: "tracking-db", containerName: "trackingByPresId",  Connection = "CosmosDbConnectionString")]
+            CosmosClient  client, ILogger log)                     
         {
 
-            //  string _date = req.Query["date"];
-            string _prestationId = req.Query["PrestationId"]; // read _prestationId to get driver for from querystring
-
+            string _date = req.Query["date"];
+            string _prestationId = req.Query["PrestationId"]; 
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             dynamic data = JsonConvert.DeserializeObject(requestBody);
-            var _coordinates = /*data?.features[0].geometry*/data?.geometry.coordinates.ToString();
+            //var _coordinates = /*data?.features[0].geometry*/data?.geometry.coordinates.ToString();
             int prestationId = int.Parse(_prestationId);
-           // DateTime? date = Convert.ToDateTime(_date);         
-
-
-
-            if (prestationId == 0 )
+            if (prestationId == 0)
             {
                 return new BadRequestObjectResult("Please pass a PrestationId in the request body");
             }
             else
             {
                 log.LogInformation("C# HTTP trigger function processed a request.");
-            }
+            }     
+            var userPoint = new Point(-7.537067, 33.59421);           
+            try
+            {
+                Container container = client.GetDatabase("tracking-db").GetContainer("trackingByPresId");
 
-            Circuit circuit = new()
-            {
-                PrestationId = prestationId                             
-            };
+                /*** USING LINQ EXPRESSION ***/
 
-            var Coordinates = JsonConvert.DeserializeObject<List<List<double>>>(_coordinates);
-            var listcoords = new List<List<List<double>>>
-            {
-                Coordinates
-            };
-            circuit.GeoZone = new GeoZone
-            {
-                Type = "FeatureCollection",
-            
-                Features = new List<Features>
+                /*var circuits = container.GetItemLinqQueryable<Circuit>(allowSynchronousQueryExecution: true)
+                    .Where(c => c.Location.Distance(userPoint) >= 10000 && c.Location.Distance(userPoint) < 10000)
+                    .Where(c => c.TypePrestationId == prestationId && c.Time.Contains(_date));*/
+
+                QueryDefinition queryDefinition = new QueryDefinition(
+                    "SELECT * FROM trackingByPresId AS f WHERE ST_DISTANCE(f.location, {type: @type, coordinates:[@long,@lat]}) >= 0 AND ST_DISTANCE(f.location, {type: @type, coordinates:[@long,@lat]}) <= 10 AND f.TypePrestationId = @prestationId  AND CONTAINS(f.time,@date)")
+                    .WithParameter("@long", userPoint.Position.Longitude)
+                    .WithParameter("@lat", userPoint.Position.Latitude)
+                    .WithParameter("@prestationId", prestationId)
+                    .WithParameter("@date", _date)
+                    .WithParameter("@type", "Point");
+                using FeedIterator<Circuit> resultSet = container.GetItemQueryIterator<Circuit>(queryDefinition);
+                List<Circuit> result = new();
+                while (resultSet.HasMoreResults)
                 {
-                    new Features
-                    {
-                        Type = "Feature",
-                        geometry = new Geometries
-                        {
-                            Type = "Polygon",
-                            Coordinates = listcoords //JsonConvert.DeserializeObject<List<List<List<double>>>>(_coordinates)
-                        }
-                    }
+                    FeedResponse<Circuit> response = await resultSet.ReadNextAsync();
+                    Circuit item = response.First();
+                    result.Add(item);
+                    log.LogInformation(item.id);
                 }
-            };
-            Uri driverCollectionUri = UriFactory.CreateDocumentCollectionUri("CircuitDB","RefCircuitByPresId");
-            //var options = new FeedOptions { EnableCrossPartitionQuery = true }; // Enable cross partition query
-            IDocumentQuery<Circuit> Circuits = documents.CreateDocumentQuery<Circuit>(driverCollectionUri)
-                .Where(circuit => circuit.PrestationId == prestationId)
-                .AsDocumentQuery();
-           /* Microsoft.Azure.Cosmos.Container container = client.GetDatabase("CircuitDB").GetContainer("RefCircuitByPresId");
+                return new OkObjectResult(result.FirstOrDefault());
 
-            foreach (Circuit user in container.GetItemLinqQueryable<UserProfile>(allowSynchronousQueryExecution: true).Where(u => u.ProfileType == "Public" && u.Location.Distance(new Point(32.33, -4.66)) < 30000))
-            {
-                Console.WriteLine("\t" + user);
-            }*/
-
-            var circuitsForStore = new List<Circuit>();
-
-            while (Circuits.HasMoreResults)
-            {
-                foreach (Circuit item in (await Circuits.ExecuteNextAsync()).Select(v => (Circuit)v))
-                {
-                    circuitsForStore.Add(item);
-                }
             }
+            catch (Exception ex)
+            {
+                log.LogError(ex.Message.ToString());
 
-            return new OkObjectResult(circuitsForStore);
-
+            }
+            return new OkResult();
         }
     }
 }

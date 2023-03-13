@@ -7,10 +7,10 @@ namespace GetCircuitInfosByPos.Models
     public class GeoZone
     {
         [JsonProperty("type")]
-        public string Type { get; set; } = "FeatureCollection";
+        public string Type { get; set; } = "Polygon";
 
-        [JsonProperty("features")]
-        public List<Features> Features { get; set; }
+        [JsonProperty("coordinates")]
+        public List<double> Coordinates { get; set; }
 
 
     }
