@@ -5,7 +5,9 @@ VisualStudioVersion = 17.5.33209.295
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CosmosFunction", "CosmosFunction\CosmosFunction.csproj", "{988147F7-FBAE-41B1-B4C0-F82A140A6BF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrackingSys", "TrackingSys\TrackingSys.csproj", "{81674F64-B983-4D07-897F-79A6E2EF7F1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrackingSys", "TrackingSys\TrackingSys.csproj", "{81674F64-B983-4D07-897F-79A6E2EF7F1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetCircuitInfosByPos", "GetCircuitInfosByPos\GetCircuitInfosByPos.csproj", "{F5EC6CFB-FBD1-453D-8D6C-9C0614C05D75}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{81674F64-B983-4D07-897F-79A6E2EF7F1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81674F64-B983-4D07-897F-79A6E2EF7F1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81674F64-B983-4D07-897F-79A6E2EF7F1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5EC6CFB-FBD1-453D-8D6C-9C0614C05D75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5EC6CFB-FBD1-453D-8D6C-9C0614C05D75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5EC6CFB-FBD1-453D-8D6C-9C0614C05D75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5EC6CFB-FBD1-453D-8D6C-9C0614C05D75}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
