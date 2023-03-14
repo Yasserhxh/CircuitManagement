@@ -25,11 +25,16 @@ namespace CosmosFunction
         {
 
             string _date = req.Query["date"];
-            string _prestationId = req.Query["PrestationId"]; 
-
+            string _prestationId = req.Query["PrestationId"];
+            Point userPoint = new(0,0);
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            //var _coordinates = /*data?.features[0].geometry*/data?.geometry.coordinates.ToString();
+            if (!string.IsNullOrEmpty(requestBody))
+            { 
+                dynamic data = JsonConvert.DeserializeObject(requestBody);
+                var _coordinates = data?.coordinates.ToString();
+                dynamic listcoords = JsonConvert.DeserializeObject<List<double>>(_coordinates);
+                userPoint = new(listcoords[0], listcoords[1]);
+            }
             int prestationId = int.Parse(_prestationId);
             if (prestationId == 0)
             {
@@ -39,7 +44,6 @@ namespace CosmosFunction
             {
                 log.LogInformation("C# HTTP trigger function processed a request.");
             }     
-            var userPoint = new Point(-7.537067, 33.59421);           
             try
             {
                 Container container = client.GetDatabase("tracking-db").GetContainer("trackingByPresId");
