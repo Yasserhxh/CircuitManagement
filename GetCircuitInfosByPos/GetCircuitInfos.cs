@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using Microsoft.Azure.Cosmos;
 using GetCircuitInfosByPos.Models;
 using System.Linq;
+using System.Web.Http;
 
 namespace CosmosFunction
 {
@@ -28,16 +29,20 @@ namespace CosmosFunction
             string _prestationId = req.Query["PrestationId"];
             Point userPoint = new(0,0);
             int prestationId = int.Parse(_prestationId);
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            if (!string.IsNullOrEmpty(requestBody))
-            { 
+            try
+            {
+                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 dynamic data = JsonConvert.DeserializeObject(requestBody);
                 var _coordinates = data?.coordinates.ToString();
                 dynamic listcoords = JsonConvert.DeserializeObject<List<double>>(_coordinates);
                 userPoint = new(listcoords[0], listcoords[1]);
+            }catch(Exception ex)
+            {
+                return new BadRequestObjectResult(ex.Message.ToString());
+
             }
 
-            if (prestationId == 0)
+            if (prestationId == 0 || string.IsNullOrEmpty(_date))
                 return new BadRequestObjectResult("Please pass a PrestationId in the request body");
 
             try
@@ -71,10 +76,8 @@ namespace CosmosFunction
             }
             catch (Exception ex)
             {
-                log.LogError(ex.Message.ToString());
-
+                return new BadRequestObjectResult(ex.Message.ToString());
             }
-            return new OkResult();
         }
     }
 }

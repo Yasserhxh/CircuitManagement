@@ -68,17 +68,15 @@ namespace CosmosFunction
                 DelegataireId = delegataireId
                              
             };
+            try
+            {
+                var Coordinates = JsonConvert.DeserializeObject<List<List<double>>>(_coordinates);
+                var listcoords = new List<List<List<double>>>{Coordinates};
+                circuit.GeoZone = new GeoZone
+                {
+                    Type = "FeatureCollection",
 
-            var Coordinates = JsonConvert.DeserializeObject<List<List<double>>>(_coordinates);
-            var listcoords = new List<List<List<double>>>
-            {
-                Coordinates
-            };
-            circuit.GeoZone = new GeoZone
-            {
-                Type = "FeatureCollection",
-            
-                Features = new List<Features>
+                    Features = new List<Features>
                 {
                     new Features
                     {
@@ -86,14 +84,37 @@ namespace CosmosFunction
                         geometry = new Geometries
                         {
                             Type = "Polygon",
-                            Coordinates = listcoords //JsonConvert.DeserializeObject<List<List<List<double>>>>(_coordinates)
+                            Coordinates = listcoords
                         }
                     }
                 }
-            };
-            await documents.AddAsync(circuit);
-            return new OkObjectResult(circuit);
+                };
+                await documents.AddAsync(circuit);
+                return new OkObjectResult(circuit);
+            }
+            catch
+            {
+                var Coordinates = JsonConvert.DeserializeObject<List<List<List<double>>>>(_coordinates);
+                circuit.GeoZone = new GeoZone
+                {
+                    Type = "FeatureCollection",
 
+                    Features = new List<Features>
+                {
+                    new Features
+                    {
+                        Type = "Feature",
+                        geometry = new Geometries
+                        {
+                            Type = "Polygon",
+                            Coordinates = Coordinates 
+                        }
+                    }
+                }
+                };
+                await documents.AddAsync(circuit);
+                return new OkObjectResult(circuit);
+            }
         }
     }
 }
